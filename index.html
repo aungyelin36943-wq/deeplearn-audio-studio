@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DeepLearn AI x Sai - AI Audio Studio</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Padauk:wght@400;700&display=swap');
+        
+        body {
+            font-family: 'Padauk', sans-serif;
+            background: radial-gradient(circle at 50% 50%, #0d2a5f 0%, #030b1c 100%);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Glassmorphism Effects */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .glass-header {
+            background: linear-gradient(90deg, rgba(14,42,92,0.8) 0%, rgba(8,23,53,0.8) 100%);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-primary {
+            background: linear-gradient(180deg, #4da9ff 0%, #1d82f5 100%);
+            box-shadow: 0 0 15px rgba(29, 130, 245, 0.4);
+            border: 1px solid rgba(255,255,255,0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            box-shadow: 0 0 25px rgba(29, 130, 245, 0.7);
+            transform: translateY(-1px);
+        }
+
+        .tab-active {
+            background: linear-gradient(180deg, rgba(77, 169, 255, 0.2) 0%, rgba(29, 130, 245, 0.1) 100%);
+            border: 1px solid rgba(77, 169, 255, 0.5);
+            box-shadow: inset 0 0 10px rgba(77,169,255,0.2);
+        }
+
+        .upload-area {
+            border: 1px dashed rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+        .upload-area.dragover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: #4da9ff;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <!-- Header -->
+    <header class="glass-header w-full max-w-5xl rounded-[30px] px-6 py-3 flex justify-between items-center mb-8">
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-indigo-600 flex items-center justify-center text-xs font-bold shadow-[0_0_10px_rgba(0,0,0,0.5)]">
+                AI
+            </div>
+            <h1 class="font-bold text-lg tracking-wide">DeepLearn AI <span class="text-blue-400 font-normal">×</span> Sai</h1>
+        </div>
+        <nav class="hidden md:flex gap-8 text-sm text-gray-300">
+            <a href="#" class="hover:text-white transition">ကိရိယာများ</a>
+            <a href="#" class="hover:text-white transition">အကြောင်း</a>
+            <a href="#" class="hover:text-white transition">အသုံးပြုနည်း</a>
+        </nav>
+        <button class="btn-primary px-5 py-2 rounded-full text-sm font-semibold">
+            အခုစတင်မယ်
+        </button>
+    </header>
+
+    <!-- Main Container -->
+    <main class="w-full max-w-5xl flex flex-col gap-6">
+        
+        <!-- Upload Section -->
+        <div class="glass-panel rounded-[30px] p-8 md:p-12 flex flex-col items-center relative overflow-hidden">
+            <!-- Glow effect behind -->
+            <div class="absolute top-[-50%] left-[-10%] w-[120%] h-[120%] bg-blue-500/10 blur-[100px] pointer-events-none"></div>
+
+            <h2 class="text-3xl md:text-4xl font-bold mb-8 z-10">DeepLearn AI <span class="text-blue-400">×</span> Sai</h2>
+
+            <!-- Tabs -->
+            <div class="flex bg-black/20 p-1.5 rounded-2xl mb-8 z-10 border border-white/5 backdrop-blur-md">
+                <button onclick="switchTab('transcribe')" id="tab-transcribe" class="tab-active px-6 py-2.5 rounded-xl text-sm font-medium flex items-center gap-2 transition-all">
+                    <i class="fa-solid fa-microphone-lines"></i> စာသားထုတ်ယူ
+                </button>
+                <button onclick="switchTab('voiceover')" id="tab-voiceover" class="px-6 py-2.5 rounded-xl text-sm font-medium text-gray-400 hover:text-white flex items-center gap-2 transition-all">
+                    <i class="fa-solid fa-robot"></i> Voiceover
+                </button>
+                <button onclick="switchTab('srt')" id="tab-srt" class="px-6 py-2.5 rounded-xl text-sm font-medium text-gray-400 hover:text-white flex items-center gap-2 transition-all">
+                    <i class="fa-solid fa-file-lines"></i> SRT Export
+                </button>
+            </div>
+
+            <!-- Transcribe Area -->
+            <div id="transcribe-area" class="w-full max-w-3xl upload-area rounded-3xl p-10 flex flex-col items-center justify-center gap-4 z-10 bg-black/10">
+                <input type="file" id="file-upload" class="hidden" accept=".mp3,.wav,.m4a">
+                <div class="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center mb-2 border border-white/10">
+                    <i class="fa-solid fa-arrow-up-from-bracket text-xl text-blue-300"></i>
+                </div>
+                <h3 class="text-xl font-semibold">MP3 ကို ဆွဲထည့်ပါ</h3>
+                <p class="text-sm text-gray-400">MP3, WAV, M4A · အများဆုံး 200MB (Max 10 mins)</p>
+                <button onclick="document.getElementById('file-upload').click()" class="mt-4 bg-white/5 hover:bg-white/10 border border-white/10 px-6 py-2 rounded-xl text-sm transition">
+                    ဖိုင်ရွေးပါ
+                </button>
+                <p id="file-name" class="mt-2 text-sm text-blue-300 hidden"></p>
+                <button id="start-btn" onclick="startProcess()" class="hidden mt-4 btn-primary px-8 py-2.5 rounded-full text-sm font-bold w-full max-w-xs flex justify-center items-center gap-2">
+                    <span>အခုစတင်မယ်</span>
+                </button>
+                
+                <!-- Status & Progress -->
+                <div id="status-container" class="hidden w-full flex flex-col items-center mt-4">
+                    <p id="status-text" class="text-yellow-400 text-sm mb-2"><i class="fa-solid fa-spinner fa-spin"></i> တန်းစီနေပါသည်... (အများဆုံး ၁၀ ယောက်)</p>
+                    <div class="w-full max-w-md bg-gray-700 rounded-full h-1.5">
+                        <div id="progress-bar" class="bg-blue-500 h-1.5 rounded-full" style="width: 10%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Voiceover Area (Hidden by default) -->
+            <div id="voiceover-area" class="hidden w-full max-w-3xl rounded-3xl p-6 flex flex-col gap-4 z-10 bg-black/10 border border-white/10">
+                <textarea id="tts-text" rows="5" class="w-full bg-black/20 border border-white/10 rounded-xl p-4 text-white placeholder-gray-500 focus:outline-none focus:border-blue-400" placeholder="အသံပြောင်းလိုသော စာသားများကို ဤနေရာတွင် ရေးပါ..."></textarea>
+                <div class="flex justify-between items-center">
+                    <select id="voice-select" class="bg-black/30 border border-white/10 rounded-lg p-2 text-sm outline-none">
+                        <option value="my-MM-NilarNeural">Nilar (အမျိုးသမီး)</option>
+                        <option value="my-MM-ThihaNeural">Thiha (အမျိုးသား)</option>
+                    </select>
+                    <button onclick="startVoiceover()" id="tts-btn" class="btn-primary px-6 py-2 rounded-xl text-sm font-bold flex items-center gap-2">
+                        <i class="fa-solid fa-play"></i> အသံထုတ်မည်
+                    </button>
+                </div>
+                <audio id="audio-player" controls class="w-full mt-4 hidden"></audio>
+            </div>
+
+        </div>
+
+        <!-- Info Cards -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 w-full">
+            <div class="glass-panel p-6 rounded-2xl flex flex-col items-center text-center gap-2">
+                <i class="fa-solid fa-microphone-lines text-gray-400 text-xl"></i>
+                <h4 class="font-bold text-lg text-blue-300">၂ မျိုး</h4>
+                <p class="text-xs text-gray-400">Thiha · Nilar အသံ</p>
+            </div>
+            <div class="glass-panel p-6 rounded-2xl flex flex-col items-center text-center gap-2">
+                <i class="fa-solid fa-pen-nib text-yellow-500 text-xl"></i>
+                <h4 class="font-bold text-lg text-white">25,000</h4>
+                <p class="text-xs text-gray-400">စာလုံး အများဆုံး</p>
+            </div>
+            <div class="glass-panel p-6 rounded-2xl flex flex-col items-center text-center gap-2">
+                <i class="fa-solid fa-bolt text-yellow-400 text-xl"></i>
+                <h4 class="font-bold text-lg text-white">4x အထိ</h4>
+                <p class="text-xs text-gray-400">အမြန်နှုန်း - % အချိန်တို</p>
+            </div>
+            <div class="glass-panel p-6 rounded-2xl flex flex-col items-center text-center gap-2">
+                <i class="fa-solid fa-arrow-down-to-bracket text-gray-400 text-xl"></i>
+                <h4 class="font-bold text-lg text-blue-300">MP3 + SRT</h4>
+                <p class="text-xs text-gray-400">ချက်ချင်း ဒေါင်းလုဒ်</p>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="mt-auto py-8 text-center flex flex-col items-center gap-3">
+        <div class="flex items-center gap-2">
+            <div class="w-6 h-6 rounded-full bg-gradient-to-br from-blue-400 to-indigo-600 flex items-center justify-center text-[10px] font-bold">AI</div>
+            <span class="font-bold text-sm">DeepLearn AI <span class="text-blue-400">×</span> Sai</span>
+        </div>
+        <p class="text-xs text-gray-500">မြန်မာ content creator များအတွက် AI Audio Studio · © 2026 DeepLearn AI</p>
+    </footer>
+
+    <script>
+        // API Base URL (Change this to your actual deployed backend URL later)
+        const API_URL = "http://localhost:8000"; 
+
+        // Tab Switching Logic
+        function switchTab(tab) {
+            const tabs = ['transcribe', 'voiceover', 'srt'];
+            tabs.forEach(t => {
+                const btn = document.getElementById(`tab-${t}`);
+                if(t === tab) {
+                    btn.classList.add('tab-active');
+                    btn.classList.remove('text-gray-400');
+                } else {
+                    btn.classList.remove('tab-active');
+                    btn.classList.add('text-gray-400');
+                }
+            });
+
+            if(tab === 'transcribe' || tab === 'srt') {
+                document.getElementById('transcribe-area').classList.remove('hidden');
+                document.getElementById('voiceover-area').classList.add('hidden');
+            } else if(tab === 'voiceover') {
+                document.getElementById('transcribe-area').classList.add('hidden');
+                document.getElementById('voiceover-area').classList.remove('hidden');
+            }
+        }
+
+        // File Drag & Drop handling
+        const uploadArea = document.getElementById('transcribe-area');
+        const fileInput = document.getElementById('file-upload');
+        const fileNameDisplay = document.getElementById('file-name');
+        const startBtn = document.getElementById('start-btn');
+        let selectedFile = null;
+
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, () => uploadArea.classList.add('dragover'), false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, () => uploadArea.classList.remove('dragover'), false);
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            let dt = e.dataTransfer;
+            let files = dt.files;
+            handleFiles(files);
+        });
+
+        fileInput.addEventListener('change', function() {
+            handleFiles(this.files);
+        });
+
+        function handleFiles(files) {
+            if(files.length > 0) {
+                const file = files[0];
+                // Check size (200MB limit)
+                if(file.size > 200 * 1024 * 1024) {
+                    alert("ဖိုင်အရွယ်အစား 200MB ထက်မကြီးရပါ။");
+                    return;
+                }
+                selectedFile = file;
+                fileNameDisplay.textContent = file.name;
+                fileNameDisplay.classList.remove('hidden');
+                startBtn.classList.remove('hidden');
+            }
+        }
+
+        // 1. Transcribe (SRT) Process
+        async function startProcess() {
+            if(!selectedFile) return;
+
+            const statusContainer = document.getElementById('status-container');
+            const statusText = document.getElementById('status-text');
+            const progressBar = document.getElementById('progress-bar');
+            
+            startBtn.classList.add('hidden');
+            statusContainer.classList.remove('hidden');
+            statusText.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> ဆာဗာသို့ ပို့ဆောင်နေပါသည်...';
+            progressBar.style.width = '30%';
+
+            const formData = new FormData();
+            formData.append("file", selectedFile);
+
+            try {
+                // Send to backend
+                const response = await fetch(`${API_URL}/api/transcribe`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if(response.status === 429) {
+                    statusText.innerHTML = '<i class="fa-solid fa-users"></i> လူသုံးများနေသဖြင့် တန်းစီနေရပါသည်။ ခေတ္တစောင့်ပါ...';
+                    progressBar.style.width = '50%';
+                } else {
+                    statusText.innerHTML = '<i class="fa-solid fa-gear fa-spin"></i> AI ဖြင့် စာသားထုတ်ယူနေပါသည်...';
+                    progressBar.style.width = '70%';
+                }
+
+                const data = await response.json();
+
+                if(!response.ok) {
+                    throw new Error(data.detail || "လုပ်ဆောင်မှု မအောင်မြင်ပါ");
+                }
+
+                progressBar.style.width = '100%';
+                statusText.innerHTML = '<i class="fa-solid fa-check text-green-400"></i> အောင်မြင်ပါသည်! SRT ဒေါင်းလုဒ်ဆွဲနေသည်...';
+
+                // Download SRT File automatically
+                const blob = new Blob([data.srt_content], { type: 'text/plain' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = selectedFile.name.replace(/\.[^/.]+$/, "") + ".srt";
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                
+                setTimeout(() => {
+                    statusContainer.classList.add('hidden');
+                    startBtn.classList.remove('hidden');
+                }, 3000);
+
+            } catch (error) {
+                statusText.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-red-400"></i> အမှားပြနေပါသည်: ${error.message}`;
+                progressBar.classList.replace('bg-blue-500', 'bg-red-500');
+                setTimeout(() => {
+                    statusContainer.classList.add('hidden');
+                    startBtn.classList.remove('hidden');
+                    progressBar.classList.replace('bg-red-500', 'bg-blue-500');
+                }, 4000);
+            }
+        }
+
+        // 2. AI Voiceover Process
+        async function startVoiceover() {
+            const text = document.getElementById('tts-text').value;
+            const voice = document.getElementById('voice-select').value;
+            const btn = document.getElementById('tts-btn');
+            const audioPlayer = document.getElementById('audio-player');
+
+            if(!text.trim()) {
+                alert("ကျေးဇူးပြု၍ စာသားထည့်ပါ။");
+                return;
+            }
+
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> လုပ်ဆောင်နေသည်...';
+            btn.disabled = true;
+
+            try {
+                const response = await fetch(`${API_URL}/api/tts`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text: text, voice: voice })
+                });
+
+                if(!response.ok) throw new Error("အသံထုတ်လုပ်ခြင်း မအောင်မြင်ပါ");
+
+                const audioBlob = await response.blob();
+                const audioUrl = URL.createObjectURL(audioBlob);
+                
+                audioPlayer.src = audioUrl;
+                audioPlayer.classList.remove('hidden');
+                audioPlayer.play();
+
+            } catch (error) {
+                alert(error.message);
+            } finally {
+                btn.innerHTML = '<i class="fa-solid fa-play"></i> အသံထုတ်မည်';
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>

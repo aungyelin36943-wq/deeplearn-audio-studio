@@ -1,0 +1,7 @@
+fastapi
+uvicorn
+python-multipart
+faster-whisper
+edge-tts
+mutagen
+၃။ **Frontend မှချိတ်ဆက်ခြင်း:** Deploy လုပ်ပြီးလို့ Server link (ဥပမာ: `https://deeplearn-api.onrender.com`) ရလာပြီဆိုရင် `index.html` ရဲ့ အောက်ခြေက `<script>` အစမှာရှိတဲ့ `const API_URL = "http://localhost:8000";` ကို အဲဒီ link နဲ့ ပြောင်းလဲပေးဖို့ လိုပါမယ်။
